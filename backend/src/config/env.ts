@@ -15,8 +15,8 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string().optional(),
-  OPENAI_API_KEY: z.string().optional(),
-  OPENAI_MODEL: z.string().default("gpt-4o-mini")
+  FEATHERLESS_API_KEY: z.string().optional(),
+  FEATHERLESS_MODEL: z.string().default("Qwen/Qwen2.5-7B-Instruct")
 });
 
 export const env = envSchema.parse(process.env);
