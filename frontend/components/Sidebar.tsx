@@ -10,18 +10,18 @@ const items = [
   { href: "/tracker", label: "Applications", icon: ClipboardList },
   { href: "/profile", label: "Profile", icon: User },
   { href: "/essay-helper", label: "Essay Helper", icon: BookMarked },
-  { href: "/scholarships", label: "Settings", icon: Settings }
+  { href: "/settings", label: "Settings", icon: Settings }
 ];
 
 export function Sidebar({ open, onClose }: { open?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <aside className={`${open ? "translate-x-0" : "-translate-x-full"} fixed top-0 z-50 flex h-screen w-64 flex-col border-r border-gray-200 bg-white transition-transform duration-300 lg:sticky lg:translate-x-0`}>
-      <div className="border-b border-gray-200 p-6">
+    <aside className={`${open ? "translate-x-0" : "-translate-x-full"} fixed top-0 z-50 flex h-screen w-64 flex-col border-r border-gray-200 bg-white transition-transform duration-300 dark:border-gray-700 dark:bg-gray-800 lg:sticky lg:translate-x-0`}>
+      <div className="border-b border-gray-200 p-6 dark:border-gray-700">
         <Link href="/" className="block" onClick={onClose}>
           <h1 className="text-2xl font-bold text-blue-600">ScholarMatch</h1>
-          <p className="mt-1 text-sm text-gray-500">Find your perfect scholarship</p>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Find your perfect scholarship</p>
         </Link>
       </div>
 
@@ -29,13 +29,13 @@ export function Sidebar({ open, onClose }: { open?: boolean; onClose?: () => voi
         <ul className="space-y-2">
           {items.map((item) => {
             const Icon = item.icon;
-            const active = pathname === item.href;
+            const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
             return (
               <li key={`${item.href}-${item.label}`}>
                 <Link
                   href={item.href}
                   onClick={onClose}
-                  className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${active ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-gray-100"}`}
+                  className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${active ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700"}`}
                 >
                   <Icon className="h-5 w-5" />
                   <span>{item.label}</span>
@@ -46,7 +46,7 @@ export function Sidebar({ open, onClose }: { open?: boolean; onClose?: () => voi
         </ul>
       </nav>
 
-      <div className="border-t border-gray-200 p-4">
+      <div className="border-t border-gray-200 p-4 dark:border-gray-700">
         <div className="rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 p-4 text-white">
           <Award className="mb-2 h-8 w-8" />
           <p className="text-sm font-semibold">Complete your profile</p>

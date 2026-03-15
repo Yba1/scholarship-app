@@ -22,26 +22,26 @@ export function AppShell({ title, subtitle, action, children }: AppShellProps) {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
       {sidebarOpen ? <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} /> : null}
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 border-b border-gray-200 bg-white px-4 py-4 md:px-6">
+        <header className="sticky top-0 z-30 border-b border-gray-200 bg-white px-4 py-4 dark:border-gray-700 dark:bg-gray-800 md:px-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3">
-              <button onClick={() => setSidebarOpen((value) => !value)} className="rounded-lg p-2 hover:bg-gray-100 lg:hidden">
+              <button onClick={() => setSidebarOpen((value) => !value)} className="rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden">
                 {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
               <div className="min-w-0">
-                <p className="text-sm font-medium text-gray-500">Student workspace</p>
-                <h1 className="truncate text-lg font-semibold text-gray-900 md:text-xl">{title}</h1>
-                <p className="hidden text-sm text-gray-500 sm:block">{subtitle}</p>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Student workspace</p>
+                <h1 className="truncate text-lg font-semibold text-gray-900 dark:text-gray-100 md:text-xl">{title}</h1>
+                <p className="hidden text-sm text-gray-500 dark:text-gray-400 sm:block">{subtitle}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               {action}
-              <button className="relative rounded-lg p-2 hover:bg-gray-100">
-                <Bell className="h-5 w-5 text-gray-600" />
+              <button className="relative rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <Bell className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                 <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
               </button>
               <div className="hidden h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 sm:block" />
@@ -52,7 +52,7 @@ export function AppShell({ title, subtitle, action, children }: AppShellProps) {
                     router.push("/");
                     router.refresh();
                   }}
-                  className="hidden rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 md:block"
+                  className="hidden rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 md:block"
                 >
                   Logout
                 </button>

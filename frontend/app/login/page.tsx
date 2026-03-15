@@ -30,7 +30,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-[calc(100vh-81px)] max-w-7xl items-center px-6 py-12">
+    <main className="mx-auto flex min-h-screen max-w-7xl items-center px-6 py-12">
       <div className="mx-auto w-full max-w-lg rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
         <p className="text-sm font-medium text-gray-500">Welcome back</p>
         <h1 className="mt-2 text-3xl font-bold text-gray-900">Log in</h1>

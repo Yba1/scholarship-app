@@ -3,7 +3,7 @@ import { Award, Calendar, Search, TrendingUp } from "lucide-react";
 
 export default function HomePage() {
   return (
-    <main className="min-h-[calc(100vh-81px)] bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <section className="mx-auto max-w-7xl px-6 py-16">
         <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div>
