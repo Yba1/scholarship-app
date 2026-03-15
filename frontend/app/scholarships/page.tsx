@@ -112,20 +112,20 @@ export default function ScholarshipsPage() {
         </button>
       ) : null}
     >
-      <div className="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
         <div className="grid gap-4 md:grid-cols-[1fr_180px_180px]">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-            <input className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-12 pr-4 text-gray-900 outline-none placeholder:text-gray-500 focus:border-blue-500" placeholder="Search scholarships by title or keyword" value={query} onChange={(event) => setQuery(event.target.value)} />
+            <input className="w-full rounded-xl border border-gray-300 py-3 pl-12 pr-4 text-gray-900 outline-none placeholder:text-gray-500 focus:border-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-400" placeholder="Search scholarships by title or keyword" value={query} onChange={(event) => setQuery(event.target.value)} />
           </div>
-          <input className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none placeholder:text-gray-500 focus:border-blue-500" placeholder="State" value={state} onChange={(event) => setState(event.target.value)} />
-          <input className="rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none placeholder:text-gray-500 focus:border-blue-500" placeholder="Major" value={major} onChange={(event) => setMajor(event.target.value)} />
+          <input className="rounded-xl border border-gray-300 px-4 py-3 text-gray-900 outline-none placeholder:text-gray-500 focus:border-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-400" placeholder="State" value={state} onChange={(event) => setState(event.target.value)} />
+          <input className="rounded-xl border border-gray-300 px-4 py-3 text-gray-900 outline-none placeholder:text-gray-500 focus:border-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-400" placeholder="Major" value={major} onChange={(event) => setMajor(event.target.value)} />
         </div>
-        {message ? <p className="mt-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-600">{message}</p> : null}
-        {error ? <p className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p> : null}
+        {message ? <p className="mt-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-600 dark:bg-green-900/30 dark:text-green-300">{message}</p> : null}
+        {error ? <p className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-900/30 dark:text-red-300">{error}</p> : null}
       </div>
       <div className="space-y-4">
-        {scholarships.length ? scholarships.map((scholarship) => <ScholarshipCard key={scholarship.id} scholarship={scholarship} match={matchMap.get(scholarship.id)} onSave={() => trackScholarship(scholarship.id, "Saved")} onApply={() => trackScholarship(scholarship.id, "Applying")} />) : <div className="rounded-lg border border-gray-200 bg-white p-8 text-sm text-gray-500 shadow-sm">No scholarships matched this filter set yet.</div>}
+        {scholarships.length ? scholarships.map((scholarship) => <ScholarshipCard key={scholarship.id} scholarship={scholarship} match={matchMap.get(scholarship.id)} onSave={() => trackScholarship(scholarship.id, "Saved")} onApply={() => trackScholarship(scholarship.id, "Applying")} />) : <div className="rounded-lg border border-gray-200 bg-white p-8 text-sm text-gray-500 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">No scholarships matched this filter set yet.</div>}
       </div>
     </AppShell>
   );

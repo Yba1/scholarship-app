@@ -297,12 +297,12 @@ export default function ProfilePage() {
 
   return (
     <AppShell title="Profile Builder" subtitle="Complete your academic, personal, and extracurricular profile for better scholarship matching.">
-      {authChecked && !token ? <div className="rounded-lg border border-gray-200 bg-white p-8 text-sm text-gray-600 shadow-sm">Log in to build your student profile.</div> : null}
+      {authChecked && !token ? <div className="rounded-lg border border-gray-200 bg-white p-8 text-sm text-gray-600 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">Log in to build your student profile.</div> : null}
       {token ? (
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm md:p-8">
-          {loading ? <p className="text-sm text-gray-500">Loading profile...</p> : null}
-          {error ? <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p> : null}
-          {message ? <p className="mb-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-600">{message}</p> : null}
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:p-8">
+          {loading ? <p className="text-sm text-gray-500 dark:text-gray-400">Loading profile...</p> : null}
+          {error ? <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-900/30 dark:text-red-300">{error}</p> : null}
+          {message ? <p className="mb-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-600 dark:bg-green-900/30 dark:text-green-300">{message}</p> : null}
           <form
             className="grid gap-4 md:grid-cols-2"
             onSubmit={async (event) => {
@@ -347,10 +347,10 @@ export default function ProfilePage() {
               }
             }}
           >
-            <input className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none placeholder:text-gray-500 focus:border-blue-500" placeholder="First name" value={form.firstName} onChange={(event) => setForm({ ...form, firstName: event.target.value })} />
-            <input className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none placeholder:text-gray-500 focus:border-blue-500" placeholder="Last name" value={form.lastName} onChange={(event) => setForm({ ...form, lastName: event.target.value })} />
+            <input className="rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" placeholder="First name" value={form.firstName} onChange={(event) => setForm({ ...form, firstName: event.target.value })} />
+            <input className="rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" placeholder="Last name" value={form.lastName} onChange={(event) => setForm({ ...form, lastName: event.target.value })} />
             <input
-              className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none placeholder:text-gray-500 focus:border-blue-500"
+              className="rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
               placeholder="GPA (e.g. 3.5)"
               type="number"
               step="0.1"
@@ -359,11 +359,11 @@ export default function ProfilePage() {
               value={form.gpa}
               onChange={(event) => setForm({ ...form, gpa: event.target.value })}
             />
-            <input className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none placeholder:text-gray-500 focus:border-blue-500" placeholder="Major interest" value={form.majorInterest} onChange={(event) => setForm({ ...form, majorInterest: event.target.value })} />
-            <input className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none placeholder:text-gray-500 focus:border-blue-500" placeholder="State" value={form.state} onChange={(event) => setForm({ ...form, state: event.target.value })} />
+            <input className="rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" placeholder="Major interest" value={form.majorInterest} onChange={(event) => setForm({ ...form, majorInterest: event.target.value })} />
+            <input className="rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" placeholder="State" value={form.state} onChange={(event) => setForm({ ...form, state: event.target.value })} />
             <div className="relative">
               <input
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none placeholder:text-gray-500 focus:border-blue-500"
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                 placeholder="Country"
                 value={countryQuery}
                 onFocus={() => setCountryOpen(true)}
@@ -376,8 +376,8 @@ export default function ProfilePage() {
                 }}
               />
               {countryOpen ? (
-                <div className="absolute z-20 mt-2 max-h-64 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
-                  {filteredCommonCountries.length ? <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-gray-500">Common</p> : null}
+                <div className="absolute z-20 mt-2 max-h-64 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white p-2 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                  {filteredCommonCountries.length ? <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Common</p> : null}
                   {filteredCommonCountries.map((country) => (
                     <button
                       key={`common-${country}`}
@@ -388,13 +388,13 @@ export default function ProfilePage() {
                         setForm({ ...form, country });
                         setCountryOpen(false);
                       }}
-                      className="block w-full rounded-md px-2 py-2 text-left text-sm text-gray-700 hover:bg-blue-50"
+                      className="block w-full rounded-md px-2 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 dark:text-gray-200 dark:hover:bg-gray-700"
                     >
                       {country}
                     </button>
                   ))}
 
-                  {filteredOtherCountries.length ? <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-gray-500">All countries</p> : null}
+                  {filteredOtherCountries.length ? <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">All countries</p> : null}
                   {filteredOtherCountries.map((country) => (
                     <button
                       key={`all-${country}`}
@@ -405,23 +405,23 @@ export default function ProfilePage() {
                         setForm({ ...form, country });
                         setCountryOpen(false);
                       }}
-                      className="block w-full rounded-md px-2 py-2 text-left text-sm text-gray-700 hover:bg-blue-50"
+                      className="block w-full rounded-md px-2 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 dark:text-gray-200 dark:hover:bg-gray-700"
                     >
                       {country}
                     </button>
                   ))}
 
                   {!filteredCommonCountries.length && !filteredOtherCountries.length ? (
-                    <p className="px-2 py-2 text-sm text-gray-500">No countries match your search.</p>
+                    <p className="px-2 py-2 text-sm text-gray-500 dark:text-gray-400">No countries match your search.</p>
                   ) : null}
                 </div>
               ) : null}
             </div>
-            <input className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none placeholder:text-gray-500 focus:border-blue-500" placeholder="Gender" value={form.gender} onChange={(event) => setForm({ ...form, gender: event.target.value })} />
-            <input className="rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none placeholder:text-gray-500 focus:border-blue-500" placeholder="Ethnicity" value={form.ethnicity} onChange={(event) => setForm({ ...form, ethnicity: event.target.value })} />
-            <textarea className="min-h-28 rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none placeholder:text-gray-500 focus:border-blue-500 md:col-span-2" placeholder="Extracurriculars, comma separated" value={form.activities} onChange={(event) => setForm({ ...form, activities: event.target.value })} />
-            <label className="flex items-center gap-3 rounded-lg border border-gray-200 px-4 py-3 text-sm text-gray-700"><input type="checkbox" checked={form.financialNeed} onChange={(event) => setForm({ ...form, financialNeed: event.target.checked })} />Financial need</label>
-            <label className="flex items-center gap-3 rounded-lg border border-gray-200 px-4 py-3 text-sm text-gray-700"><input type="checkbox" checked={form.firstGeneration} onChange={(event) => setForm({ ...form, firstGeneration: event.target.checked })} />First generation student</label>
+            <input className="rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" placeholder="Gender" value={form.gender} onChange={(event) => setForm({ ...form, gender: event.target.value })} />
+            <input className="rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" placeholder="Ethnicity" value={form.ethnicity} onChange={(event) => setForm({ ...form, ethnicity: event.target.value })} />
+            <textarea className="min-h-28 rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 md:col-span-2" placeholder="Extracurriculars, comma separated" value={form.activities} onChange={(event) => setForm({ ...form, activities: event.target.value })} />
+            <label className="flex items-center gap-3 rounded-lg border border-gray-200 px-4 py-3 text-sm text-gray-700 dark:border-gray-700 dark:text-gray-200"><input type="checkbox" checked={form.financialNeed} onChange={(event) => setForm({ ...form, financialNeed: event.target.checked })} />Financial need</label>
+            <label className="flex items-center gap-3 rounded-lg border border-gray-200 px-4 py-3 text-sm text-gray-700 dark:border-gray-700 dark:text-gray-200"><input type="checkbox" checked={form.firstGeneration} onChange={(event) => setForm({ ...form, firstGeneration: event.target.checked })} />First generation student</label>
             <button disabled={saving} className="rounded-lg bg-blue-600 px-6 py-3 text-sm font-medium text-white hover:bg-blue-700 md:col-span-2">{saving ? "Saving..." : hasExistingProfile ? "Update Profile" : "Create Profile"}</button>
           </form>
         </div>

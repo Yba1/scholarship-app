@@ -22,11 +22,11 @@ export default function SettingsPage() {
 
   return (
     <AppShell title="Settings" subtitle="Manage your preferences.">
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between gap-4 rounded-lg border border-gray-200 px-4 py-3">
+      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div className="flex items-center justify-between gap-4 rounded-lg border border-gray-200 px-4 py-3 dark:border-gray-700">
           <div>
-            <p className="text-sm font-semibold text-gray-900">Appearance</p>
-            <p className="text-xs text-gray-500">Choose light or dark mode.</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white">Appearance</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Choose light or dark mode.</p>
           </div>
           <button
             onClick={() => {
@@ -40,7 +40,7 @@ export default function SettingsPage() {
             {theme === "light" ? "Switch to Dark" : "Switch to Light"}
           </button>
         </div>
-        <p className="mt-4 text-sm text-gray-500">More settings coming soon - still under construction</p>
+        <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">More settings coming soon - still under construction</p>
       </div>
     </AppShell>
   );

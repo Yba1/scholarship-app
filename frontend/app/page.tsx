@@ -22,6 +22,11 @@ export default function HomePage() {
       icon: CheckCircle2
     }
   ];
+  const stats = [
+    { title: "500+ Scholarships", subtitle: "and growing" },
+    { title: "Free Forever", subtitle: "no hidden fees" },
+    { title: "Built for High Schoolers", subtitle: "grades 9-12", icon: GraduationCap }
+  ];
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white text-gray-900 dark:from-gray-950 dark:to-gray-900 dark:text-gray-100">
@@ -42,7 +47,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      <section className="mx-auto max-w-7xl px-6 py-16 md:py-24">
+      <section className="mx-auto max-w-7xl px-6 py-10 md:py-12">
         <div className="mx-auto max-w-4xl text-center">
           <h1 className="text-4xl font-bold leading-tight text-gray-900 dark:text-white md:text-6xl">Find Scholarships Made for You</h1>
           <p className="mx-auto mt-6 max-w-3xl text-base leading-7 text-gray-600 dark:text-gray-300 md:text-lg">
@@ -59,11 +64,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-10 md:py-14">
+      <section className="mx-auto max-w-7xl px-6 py-8 md:py-10">
         <div className="mb-8 text-center">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white md:text-3xl">How It Works</h2>
         </div>
-        <div className="grid gap-5 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {steps.map((step) => {
             const Icon = step.icon;
             return (
@@ -80,27 +85,24 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-10 md:py-14">
-        <div className="grid gap-4 rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm dark:border-gray-800 dark:bg-gray-900 md:grid-cols-3">
-          <div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">500+ Scholarships</p>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">and growing</p>
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">Free Forever</p>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">no hidden fees</p>
-          </div>
-          <div className="flex flex-col items-center">
-            <div className="flex items-center gap-2">
-              <GraduationCap className="h-5 w-5 text-blue-600" />
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">Built for High Schoolers</p>
-            </div>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">grades 9-12</p>
-          </div>
+      <section className="mx-auto max-w-7xl px-6 py-8 md:py-10">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {stats.map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <article key={stat.title} className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                <div className="flex items-center justify-center gap-2">
+                  {Icon ? <Icon className="h-5 w-5 text-blue-600" /> : null}
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.title}</p>
+                </div>
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{stat.subtitle}</p>
+              </article>
+            );
+          })}
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-16 pt-6 md:pb-24">
+      <section className="mx-auto max-w-7xl px-6 pb-10 pt-6 md:pb-12">
         <div className="rounded-2xl bg-blue-600 px-8 py-10 text-center text-white md:px-12 md:py-12">
           <h2 className="text-2xl font-bold md:text-3xl">Ready to find your scholarship?</h2>
           <div className="mt-6">

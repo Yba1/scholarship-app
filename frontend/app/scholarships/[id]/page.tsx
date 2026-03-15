@@ -52,17 +52,17 @@ export default function ScholarshipDetailsPage({ params }: { params: { id: strin
 
   return (
     <AppShell title="Scholarship Details" subtitle="Review eligibility, deadline, and application details before you apply.">
-      {!scholarship ? <div className="rounded-lg border border-gray-200 bg-white p-8 text-sm text-gray-600 shadow-sm">{error || "Loading scholarship details..."}</div> : null}
+      {!scholarship ? <div className="rounded-lg border border-gray-200 bg-white p-8 text-sm text-gray-600 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">{error || "Loading scholarship details..."}</div> : null}
       {scholarship ? (
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm md:p-8">
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:p-8">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">{scholarship.title}</h2>
-              <p className="mt-2 text-sm text-gray-500">{scholarship.organization}</p>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white md:text-3xl">{scholarship.title}</h2>
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{scholarship.organization}</p>
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold text-blue-600">{formatCurrency(scholarship.amount)}</p>
-              <p className="mt-2 text-sm text-gray-600">Deadline {formatDate(scholarship.deadline)}</p>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Deadline {formatDate(scholarship.deadline)}</p>
             </div>
           </div>
           <div className="mt-6 flex flex-wrap gap-3">
@@ -72,12 +72,12 @@ export default function ScholarshipDetailsPage({ params }: { params: { id: strin
           </div>
           <div className="mt-8 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Description</h3>
-              <p className="mt-4 text-sm leading-7 text-gray-700">{scholarship.description}</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Description</h3>
+              <p className="mt-4 text-sm leading-7 text-gray-700 dark:text-gray-300">{scholarship.description}</p>
             </div>
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-6">
-              <h3 className="text-lg font-semibold text-gray-900">Eligibility</h3>
-              <div className="mt-4 space-y-3 text-sm text-gray-700">
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-900">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Eligibility</h3>
+              <div className="mt-4 space-y-3 text-sm text-gray-700 dark:text-gray-300">
                 <p>Minimum GPA: {scholarship.gpaMin ?? "Not specified"}</p>
                 <p>Major: {scholarship.majorRequired || "Open"}</p>
                 <p>State: {scholarship.stateRequired || "Open"}</p>

@@ -15,12 +15,12 @@ type ScholarshipCardProps = {
 
 export function ScholarshipCard({ scholarship, match, onSave, onApply }: ScholarshipCardProps) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
-      <div className="p-4 md:p-6 hover:bg-gray-50 transition-colors">
+    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 md:p-6">
         <div className="mb-3 flex items-start justify-between">
           <div className="min-w-0 flex-1">
-            <h4 className="text-sm font-semibold text-gray-900 md:text-base">{scholarship.title}</h4>
-            <p className="mt-1 text-xs text-gray-600 md:text-sm">{scholarship.organization}</p>
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white md:text-base">{scholarship.title}</h4>
+            <p className="mt-1 text-xs text-gray-600 dark:text-gray-400 md:text-sm">{scholarship.organization}</p>
           </div>
           <div className="ml-3 flex-shrink-0 text-right">
             <p className="text-sm font-bold text-blue-600 md:text-base">{formatCurrency(scholarship.amount)}</p>
@@ -28,7 +28,7 @@ export function ScholarshipCard({ scholarship, match, onSave, onApply }: Scholar
         </div>
 
         <div className="mb-3 flex flex-wrap items-center gap-2 md:gap-4">
-          <div className="flex items-center gap-2 text-xs text-gray-600 md:text-sm">
+          <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 md:text-sm">
             <Calendar className="h-4 w-4 text-gray-400" />
             <span>{formatDate(scholarship.deadline)}</span>
           </div>
@@ -36,14 +36,14 @@ export function ScholarshipCard({ scholarship, match, onSave, onApply }: Scholar
           {match ? <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">{(match.winProbability * 100).toFixed(1)}% Win Rate</span> : null}
         </div>
 
-        <p className="text-sm text-gray-600">{scholarship.description}</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400">{scholarship.description}</p>
 
         <div className="mt-4 flex flex-col gap-3 sm:flex-row">
           <Link href={`/scholarships/${scholarship.id}`} className="rounded-lg bg-blue-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-blue-700">
             View Details
           </Link>
-          {onSave ? <button onClick={() => onSave(scholarship.id)} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Save for Later</button> : null}
-          {onApply ? <button onClick={() => onApply(scholarship.id)} className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"><BookmarkCheck className="h-4 w-4" /> Apply</button> : null}
+          {onSave ? <button onClick={() => onSave(scholarship.id)} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">Save for Later</button> : null}
+          {onApply ? <button onClick={() => onApply(scholarship.id)} className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"><BookmarkCheck className="h-4 w-4" /> Apply</button> : null}
         </div>
       </div>
     </div>

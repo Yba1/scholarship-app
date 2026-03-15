@@ -78,7 +78,7 @@ export default function DashboardPage() {
         ) : null
       }
     >
-      {!token ? <div className="rounded-lg border border-gray-200 bg-white p-8 text-sm text-gray-600 shadow-sm">Log in to see your dashboard, saved scholarships, and deadline alerts.</div> : null}
+      {!token ? <div className="rounded-lg border border-gray-200 bg-white p-8 text-sm text-gray-600 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">Log in to see your dashboard, saved scholarships, and deadline alerts.</div> : null}
       {token ? (
         <>
           <DashboardStats
@@ -89,18 +89,18 @@ export default function DashboardPage() {
               { label: "Average Score", value: averageScore, icon: <TrendingUp className="h-5 w-5 text-amber-600 md:h-6 md:w-6" />, accent: "bg-amber-100", hint: "Strong" }
             ]}
           />
-          {error ? <p className="mb-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p> : null}
+          {error ? <p className="mb-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-900/30 dark:text-red-300">{error}</p> : null}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">
-              <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-                <div className="border-b border-gray-200 p-4 md:p-6">
-                  <h3 className="text-base font-semibold text-gray-900 md:text-lg">Top Matches for You</h3>
-                  <p className="mt-1 text-xs text-gray-500 md:text-sm">Based on your profile and preferences</p>
+              <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                <div className="border-b border-gray-200 p-4 dark:border-gray-700 md:p-6">
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white md:text-lg">Top Matches for You</h3>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 md:text-sm">Based on your profile and preferences</p>
                 </div>
                 <div className="space-y-4 p-4 md:p-6">
-                  {loading ? <p className="text-sm text-gray-500">Loading matches...</p> : null}
+                  {loading ? <p className="text-sm text-gray-500 dark:text-gray-400">Loading matches...</p> : null}
                   {matches.length ? matches.slice(0, 3).map((match) => <ScholarshipCard key={match.id} scholarship={match.scholarship} match={match} />) : null}
-                  {!loading && !matches.length ? <p className="text-sm text-gray-500">No matches yet. Complete your profile and run matching.</p> : null}
+                  {!loading && !matches.length ? <p className="text-sm text-gray-500 dark:text-gray-400">No matches yet. Complete your profile and run matching.</p> : null}
                 </div>
               </div>
             </div>
@@ -110,7 +110,7 @@ export default function DashboardPage() {
                 <ImageWithFallback src="https://images.unsplash.com/photo-1629196753813-8b4827ddc7c0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080" alt="Essay helper" className="mb-4 h-24 w-full rounded-lg object-cover opacity-80 md:h-32" />
                 <h3 className="text-sm font-semibold md:text-base">Essay Helper</h3>
                 <p className="mb-4 mt-2 text-xs opacity-90 md:text-sm">Get AI-powered feedback on grammar, clarity, and structure.</p>
-                <a href="/essay-helper" className="block rounded-lg bg-white px-4 py-2 text-center text-sm font-medium text-blue-600 hover:bg-gray-100">Try Now</a>
+                <a href="/essay-helper" className="block rounded-lg bg-white px-4 py-2 text-center text-sm font-medium text-blue-600 hover:bg-gray-100 dark:bg-gray-200 dark:text-blue-700 dark:hover:bg-gray-300">Try Now</a>
               </div>
             </div>
           </div>
