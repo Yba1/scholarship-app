@@ -1,12 +1,23 @@
-"use client";
+﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { AppShell } from "@/components/AppShell";
 import { MatchScoreBadge } from "@/components/MatchScoreBadge";
 import { apiRequest, formatCurrency, formatDate } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import type { Match, Scholarship } from "@/lib/types";
+
+const placeholderHosts = ["example.org", "example.com", "localhost", "127.0.0.1"];
+
+function buildSearchUrl(title: string, organization: string) {
+  return `https://www.google.com/search?q=${encodeURIComponent(`${title} ${organization} scholarship`)}`;
+}
+
+function isPlaceholderUrl(url: string) {
+  const normalized = url.trim().toLowerCase();
+  return placeholderHosts.some((host) => normalized.includes(host));
+}
 
 export default function ScholarshipDetailsPage({ params }: { params: { id: string } }) {
   const [scholarship, setScholarship] = useState<Scholarship | null>(null);
@@ -26,6 +37,18 @@ export default function ScholarshipDetailsPage({ params }: { params: { id: strin
       .then((response) => setMatch(response.matches.find((item) => item.scholarshipId === params.id) || null))
       .catch(() => undefined);
   }, [params.id]);
+
+  const applicationUrl = useMemo(() => {
+    if (!scholarship) {
+      return "";
+    }
+
+    return isPlaceholderUrl(scholarship.applicationUrl)
+      ? buildSearchUrl(scholarship.title, scholarship.organization)
+      : scholarship.applicationUrl;
+  }, [scholarship]);
+
+  const actionLabel = scholarship && applicationUrl.includes("google.com/search") ? "Search Scholarship" : "Open Application";
 
   return (
     <AppShell title="Scholarship Details" subtitle="Review eligibility, deadline, and application details before you apply.">
@@ -63,7 +86,7 @@ export default function ScholarshipDetailsPage({ params }: { params: { id: strin
                 <p>Ethnicity: {scholarship.ethnicityRequired || "Open"}</p>
                 <p>Financial need required: {scholarship.financialNeedRequired ? "Yes" : "No"}</p>
               </div>
-              <a href={scholarship.applicationUrl} target="_blank" rel="noreferrer" className="mt-6 inline-block rounded-lg bg-blue-600 px-5 py-3 text-sm font-medium text-white hover:bg-blue-700">Open Application</a>
+              <a href={applicationUrl} target="_blank" rel="noreferrer" className="mt-6 inline-block rounded-lg bg-blue-600 px-5 py-3 text-sm font-medium text-white hover:bg-blue-700">{actionLabel}</a>
             </div>
           </div>
         </div>

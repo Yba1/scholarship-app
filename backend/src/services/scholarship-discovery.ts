@@ -11,6 +11,8 @@ const client = env.FEATHERLESS_API_KEY
     })
   : null;
 
+const placeholderHosts = ["example.org", "example.com", "localhost", "127.0.0.1"];
+
 const discoveredScholarshipSchema = z.object({
   title: z.string().min(3),
   organization: z.string().min(2),
@@ -116,6 +118,17 @@ function buildSearchUrl(title: string, organization: string) {
   return `https://www.google.com/search?q=${query}`;
 }
 
+function isPlaceholderUrl(url: string) {
+  const normalized = url.trim().toLowerCase();
+  return placeholderHosts.some((host) => normalized.includes(host));
+}
+
+function sanitizeApplicationUrl(rawUrl: string, title: string, organization: string) {
+  return rawUrl.startsWith("http") && !isPlaceholderUrl(rawUrl)
+    ? rawUrl
+    : buildSearchUrl(title, organization);
+}
+
 function normalizeScholarship(raw: unknown) {
   const source = typeof raw === "object" && raw ? (raw as Record<string, unknown>) : {};
   const title = coerceString(source.title, "Untitled Scholarship");
@@ -147,11 +160,31 @@ function normalizeScholarship(raw: unknown) {
     essayRequired: coerceBoolean(source.essayRequired),
     estimatedApplicants: Math.max(1, Math.round(coerceNumber(source.estimatedApplicants, 250))),
     numberOfWinners: Math.max(1, Math.round(coerceNumber(source.numberOfWinners, 1))),
-    applicationUrl: (() => {
-      const rawUrl = coerceString(source.applicationUrl);
-      return rawUrl.startsWith("http") ? rawUrl : buildSearchUrl(title, organization);
-    })()
+    applicationUrl: sanitizeApplicationUrl(coerceString(source.applicationUrl), title, organization)
   });
+}
+
+async function cleanupDemoScholarships() {
+  const demoScholarships = await prisma.scholarship.findMany({
+    where: {
+      OR: placeholderHosts.map((host) => ({
+        applicationUrl: { contains: host, mode: "insensitive" }
+      }))
+    },
+    select: { id: true }
+  });
+
+  if (!demoScholarships.length) {
+    return;
+  }
+
+  const scholarshipIds = demoScholarships.map((scholarship) => scholarship.id);
+
+  await prisma.$transaction([
+    prisma.match.deleteMany({ where: { scholarshipId: { in: scholarshipIds } } }),
+    prisma.application.deleteMany({ where: { scholarshipId: { in: scholarshipIds } } }),
+    prisma.scholarship.deleteMany({ where: { id: { in: scholarshipIds } } })
+  ]);
 }
 
 async function loadFallbackScholarships(
@@ -178,6 +211,11 @@ async function loadFallbackScholarships(
   return prisma.scholarship.findMany({
     where: {
       AND: [
+        {
+          NOT: placeholderHosts.map((host) => ({
+            applicationUrl: { contains: host, mode: "insensitive" }
+          }))
+        },
         state ? { OR: [{ stateRequired: state }, { stateRequired: null }] } : {},
         major
           ? {
@@ -212,6 +250,8 @@ export async function discoverScholarshipsForUser(
     limit?: number;
   }
 ) {
+  await cleanupDemoScholarships();
+
   if (!client) {
     return loadFallbackScholarships(userId, options);
   }
@@ -225,6 +265,11 @@ export async function discoverScholarshipsForUser(
   }
 
   const existing = await prisma.scholarship.findMany({
+    where: {
+      NOT: placeholderHosts.map((host) => ({
+        applicationUrl: { contains: host, mode: "insensitive" }
+      }))
+    },
     select: { title: true, organization: true },
     take: 100
   });
@@ -242,7 +287,7 @@ export async function discoverScholarshipsForUser(
         {
           role: "system",
           content:
-            "You are a scholarship research assistant. Return only valid JSON as an array. Recommend real or plausibly recurring scholarships that align with the student profile. Prefer known national, state, university, foundation, or employer-sponsored opportunities. Do not include markdown or commentary. If an exact application URL is uncertain, return a Google search URL for the scholarship title and organization."
+            "You are a scholarship research assistant. Return only valid JSON as an array. Recommend real or plausibly recurring scholarships that align with the student profile. Prefer known national, state, university, foundation, or employer-sponsored opportunities. Never use example.org, example.com, localhost, or placeholder domains. If an exact application URL is uncertain, return a Google search URL for the scholarship title and organization."
         },
         {
           role: "user",
@@ -310,9 +355,11 @@ export async function discoverScholarshipsForUser(
   const upserted = [] as Awaited<ReturnType<typeof prisma.scholarship.upsert>>[];
 
   for (const scholarship of parsed) {
-    const safeApplicationUrl = scholarship.applicationUrl.includes("http")
-      ? scholarship.applicationUrl
-      : buildSearchUrl(scholarship.title, scholarship.organization);
+    const safeApplicationUrl = sanitizeApplicationUrl(
+      scholarship.applicationUrl,
+      scholarship.title,
+      scholarship.organization
+    );
 
     const record = await prisma.scholarship.upsert({
       where: {
