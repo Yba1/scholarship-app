@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma.js";
+import { discoverScholarshipsForUser } from "./scholarship-discovery.js";
 
 type MatchBreakdown = {
   score: number;
@@ -111,6 +112,14 @@ export async function runMatchForUser(userId: string) {
   if (!student) {
     throw new Error("Student profile not found.");
   }
+
+  await discoverScholarshipsForUser(userId, {
+    major: student.majorInterest,
+    state: student.state,
+    limit: 12
+  }).catch((error) => {
+    console.error("Scholarship discovery failed before matching", error);
+  });
 
   const scholarships = await prisma.scholarship.findMany({
     orderBy: {

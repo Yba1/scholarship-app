@@ -2,7 +2,9 @@ import { Router } from "express";
 import { z } from "zod";
 
 import { prisma } from "../lib/prisma.js";
+import { authenticate, type AuthenticatedRequest } from "../middleware/auth.js";
 import { validate } from "../middleware/validate.js";
+import { discoverScholarshipsForUser } from "../services/scholarship-discovery.js";
 
 const router = Router();
 
@@ -24,6 +26,17 @@ const scholarshipSchema = z.object({
     estimatedApplicants: z.number().int().positive(),
     numberOfWinners: z.number().int().positive(),
     applicationUrl: z.string().url()
+  }),
+  query: z.object({}).optional().default({}),
+  params: z.object({}).optional().default({})
+});
+
+const discoverSchema = z.object({
+  body: z.object({
+    query: z.string().optional(),
+    major: z.string().optional(),
+    state: z.string().optional(),
+    limit: z.number().int().min(1).max(20).optional()
   }),
   query: z.object({}).optional().default({}),
   params: z.object({}).optional().default({})
@@ -67,6 +80,21 @@ router.get("/", async (request, response, next) => {
     });
 
     response.json({ scholarships });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/discover", authenticate, validate(discoverSchema), async (request: AuthenticatedRequest, response, next) => {
+  try {
+    const scholarships = await discoverScholarshipsForUser(request.user!.id, {
+      query: request.body.query,
+      major: request.body.major,
+      state: request.body.state,
+      limit: request.body.limit
+    });
+
+    response.status(201).json({ scholarships });
   } catch (error) {
     next(error);
   }

@@ -1,3 +1,8 @@
+import { config } from "dotenv";
+
+config({ path: "../../.env" });
+config({ path: "../.env" });
+
 import { PrismaClient } from "../../backend/src/generated/prisma";
 
 const prisma = new PrismaClient();

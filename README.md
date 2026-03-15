@@ -27,7 +27,7 @@ Production-ready MVP for a scholarship matching platform with:
 - Match generation with score and win probability
 - Dashboard with deadlines and tracker summary
 - Application tracking with statuses
-- Essay feedback endpoint using OpenAI when configured
+- Essay feedback endpoint using Featherless when configured
 - Daily deadline reminder job using `node-cron` and `nodemailer`
 - Dynamic SEO pages for scholarship topics and locations
 
@@ -46,8 +46,8 @@ Required variables:
 
 Optional but recommended:
 
-- `OPENAI_API_KEY`
-- `OPENAI_MODEL`
+- `FEATHERLESS_API_KEY`
+- `FEATHERLESS_MODEL`
 - `SMTP_HOST`
 - `SMTP_PORT`
 - `SMTP_USER`
@@ -161,5 +161,6 @@ adjusted_probability = base_probability * (match_score / 100)
 ## Notes
 
 - The essay helper provides feedback only and does not generate full essays.
+- Featherless is used through its OpenAI-compatible API surface.
 - Reminder emails are only sent when SMTP is configured.
 - The frontend styling was adapted to use the imported Desktop UI direction you provided.

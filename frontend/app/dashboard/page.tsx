@@ -56,7 +56,13 @@ export default function DashboardPage() {
             onClick={async () => {
               if (!token) return;
               setRunning(true);
+              setError("");
               try {
+                await apiRequest("/scholarships/discover", {
+                  method: "POST",
+                  token,
+                  body: JSON.stringify({ limit: 12 })
+                });
                 const response = await apiRequest<{ matches: Match[] }>("/match/run", { method: "POST", token });
                 setMatches(response.matches);
               } catch (runError) {
@@ -67,7 +73,7 @@ export default function DashboardPage() {
             }}
             className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
           >
-            {running ? "Running..." : "Run matching"}
+            {running ? "Refreshing..." : "Run matching"}
           </button>
         ) : null
       }
