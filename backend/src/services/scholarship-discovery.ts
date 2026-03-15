@@ -1,17 +1,25 @@
-﻿import { OpenAI } from "openai";
-import { z } from "zod";
+﻿import { z } from "zod";
 
 import { env } from "../config/env.js";
 import { prisma } from "../lib/prisma.js";
 
-const client = env.FEATHERLESS_API_KEY
-  ? new OpenAI({
-      apiKey: env.FEATHERLESS_API_KEY,
-      baseURL: "https://api.featherless.ai/v1"
-    })
-  : null;
-
 const placeholderHosts = ["example.org", "example.com", "localhost", "127.0.0.1"];
+
+const braveSearchResultSchema = z.object({
+  title: z.string(),
+  url: z.string().url(),
+  description: z.string().optional().default(""),
+  extra_snippets: z.array(z.string()).optional().default([])
+});
+
+const braveSearchResponseSchema = z.object({
+  web: z
+    .object({
+      results: z.array(braveSearchResultSchema).default([])
+    })
+    .optional()
+    .default({ results: [] })
+});
 
 const discoveredScholarshipSchema = z.object({
   title: z.string().min(3),
@@ -32,85 +40,41 @@ const discoveredScholarshipSchema = z.object({
   applicationUrl: z.string().url()
 });
 
-const discoveryResponseSchema = z.array(discoveredScholarshipSchema);
-
-const normalizedScholarshipSchema = z.object({
-  title: z.string().min(3),
-  organization: z.string().min(2),
-  amount: z.number().int().nonnegative(),
-  description: z.string().min(20),
-  deadline: z.string(),
-  gpaMin: z.number().min(0).max(4.5).nullable().optional(),
-  majorRequired: z.string().nullable().optional(),
-  stateRequired: z.string().nullable().optional(),
-  countryRequired: z.string().nullable().optional(),
-  genderRequired: z.string().nullable().optional(),
-  ethnicityRequired: z.string().nullable().optional(),
-  financialNeedRequired: z.boolean().optional().default(false),
-  essayRequired: z.boolean().optional().default(false),
-  estimatedApplicants: z.number().int().positive(),
-  numberOfWinners: z.number().int().positive(),
-  applicationUrl: z.string().url()
-});
-
-function coerceNumber(value: unknown, fallback: number) {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return value;
-  }
-
-  if (typeof value === "string") {
-    const cleaned = value.replace(/[^0-9.]/g, "");
-    const parsed = Number(cleaned);
-
-    if (Number.isFinite(parsed)) {
-      return parsed;
-    }
-  }
-
-  return fallback;
-}
-
-function coerceBoolean(value: unknown) {
-  if (typeof value === "boolean") {
-    return value;
-  }
-
-  if (typeof value === "string") {
-    return ["true", "yes", "1"].includes(value.trim().toLowerCase());
-  }
-
-  return false;
-}
-
 function coerceString(value: unknown, fallback = "") {
   return typeof value === "string" ? value.trim() : fallback;
 }
 
-function normalizeDeadline(value: unknown) {
-  const raw = coerceString(value);
-
-  if (!raw) {
-    return new Date(Date.now() + 1000 * 60 * 60 * 24 * 90).toISOString();
+function normalizeDeadlineFromText(text: string) {
+  const isoMatch = text.match(/\b(20\d{2}-\d{2}-\d{2})\b/);
+  if (isoMatch) {
+    const parsed = new Date(`${isoMatch[1]}T00:00:00.000Z`);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toISOString();
+    }
   }
 
-  const parsed = new Date(raw);
-
-  if (!Number.isNaN(parsed.getTime())) {
-    return parsed.toISOString();
+  const monthMatch = text.match(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}(?:,\s*20\d{2})?/i);
+  if (monthMatch) {
+    const parsed = new Date(monthMatch[0]);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toISOString();
+    }
   }
 
-  return new Date(Date.now() + 1000 * 60 * 60 * 24 * 90).toISOString();
+  return new Date(Date.now() + 1000 * 60 * 60 * 24 * 120).toISOString();
 }
 
-function extractJsonArray(raw: string) {
-  const start = raw.indexOf("[");
-  const end = raw.lastIndexOf("]");
-
-  if (start === -1 || end === -1 || end <= start) {
-    throw new Error("Discovery model did not return JSON array content.");
+function extractAmount(text: string) {
+  const matches = [...text.matchAll(/\$(\d{1,3}(?:,\d{3})+|\d+)(?:\s*(?:scholarship|award|grant))?/g)];
+  if (!matches.length) {
+    return 1000;
   }
 
-  return raw.slice(start, end + 1);
+  const values = matches
+    .map((match) => Number(match[1].replace(/,/g, "")))
+    .filter((value) => Number.isFinite(value) && value >= 0);
+
+  return values.length ? Math.max(...values) : 1000;
 }
 
 function buildSearchUrl(title: string, organization: string) {
@@ -123,44 +87,143 @@ function isPlaceholderUrl(url: string) {
   return placeholderHosts.some((host) => normalized.includes(host));
 }
 
+function normalizeHostToOrganization(url: string) {
+  try {
+    const hostname = new URL(url).hostname.replace(/^www\./, "");
+    const [primary] = hostname.split(".");
+    return primary
+      .split(/[-_]/g)
+      .filter(Boolean)
+      .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+      .join(" ");
+  } catch {
+    return "Scholarship Sponsor";
+  }
+}
+
+function extractTitleAndOrganization(title: string, url: string) {
+  const separators = [" | ", " - ", " — ", ": "];
+
+  for (const separator of separators) {
+    if (title.includes(separator)) {
+      const [left, right] = title.split(separator).map((part) => part.trim()).filter(Boolean);
+      if (left && right) {
+        return {
+          title: left,
+          organization: right
+        };
+      }
+    }
+  }
+
+  return {
+    title,
+    organization: normalizeHostToOrganization(url)
+  };
+}
+
 function sanitizeApplicationUrl(rawUrl: string, title: string, organization: string) {
   return rawUrl.startsWith("http") && !isPlaceholderUrl(rawUrl)
     ? rawUrl
     : buildSearchUrl(title, organization);
 }
 
-function normalizeScholarship(raw: unknown) {
-  const source = typeof raw === "object" && raw ? (raw as Record<string, unknown>) : {};
-  const title = coerceString(source.title, "Untitled Scholarship");
-  const organization = coerceString(source.organization, "Independent Sponsor");
-  const description = coerceString(
-    source.description,
-    `${title} is a scholarship opportunity for students pursuing their education goals.`
-  );
+function buildSearchQueries(student: {
+  majorInterest: string;
+  state: string;
+  country: string;
+  firstGeneration: boolean;
+  financialNeed: boolean;
+  activities: string[];
+}, options?: {
+  query?: string;
+  major?: string;
+  state?: string;
+  limit?: number;
+}) {
+  const major = coerceString(options?.major || student.majorInterest);
+  const state = coerceString(options?.state || student.state);
+  const country = coerceString(student.country || "USA");
+  const freeText = coerceString(options?.query);
+  const activity = student.activities.find((value) => value.trim().length > 0);
 
-  return normalizedScholarshipSchema.parse({
-    title,
-    organization,
-    amount: Math.max(0, Math.round(coerceNumber(source.amount, 1000))),
-    description:
-      description.length >= 20
-        ? description
-        : `${description} Apply directly with the sponsor for full details.`,
-    deadline: normalizeDeadline(source.deadline),
-    gpaMin:
-      source.gpaMin === null || source.gpaMin === undefined || source.gpaMin === ""
-        ? null
-        : Math.max(0, Math.min(4.5, coerceNumber(source.gpaMin, 0))),
-    majorRequired: coerceString(source.majorRequired) || null,
-    stateRequired: coerceString(source.stateRequired) || null,
-    countryRequired: coerceString(source.countryRequired) || null,
-    genderRequired: coerceString(source.genderRequired) || null,
-    ethnicityRequired: coerceString(source.ethnicityRequired) || null,
-    financialNeedRequired: coerceBoolean(source.financialNeedRequired),
-    essayRequired: coerceBoolean(source.essayRequired),
-    estimatedApplicants: Math.max(1, Math.round(coerceNumber(source.estimatedApplicants, 250))),
-    numberOfWinners: Math.max(1, Math.round(coerceNumber(source.numberOfWinners, 1))),
-    applicationUrl: sanitizeApplicationUrl(coerceString(source.applicationUrl), title, organization)
+  return Array.from(
+    new Set(
+      [
+        [freeText, major, "scholarship", state, country].filter(Boolean).join(" "),
+        [major, "scholarship", country, "site:.org OR site:.edu"].filter(Boolean).join(" "),
+        [student.firstGeneration ? "first generation" : "", student.financialNeed ? "financial need" : "", major, "scholarship"].filter(Boolean).join(" "),
+        [activity || "", major, "grant", state].filter(Boolean).join(" ")
+      ].filter((query) => query.length > 0)
+    )
+  ).slice(0, 4);
+}
+
+async function searchBrave(query: string, count: number) {
+  if (!env.BRAVE_SEARCH_API_KEY) {
+    return [] as z.infer<typeof braveSearchResultSchema>[];
+  }
+
+  const params = new URLSearchParams({
+    q: query,
+    count: String(Math.min(Math.max(count, 1), 20)),
+    search_lang: "en",
+    country: "US",
+    safesearch: "moderate",
+    extra_snippets: "true"
+  });
+
+  const response = await fetch(`https://api.search.brave.com/res/v1/web/search?${params.toString()}`, {
+    headers: {
+      Accept: "application/json",
+      "X-Subscription-Token": env.BRAVE_SEARCH_API_KEY
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Brave search failed with status ${response.status}.`);
+  }
+
+  const payload = braveSearchResponseSchema.parse(await response.json());
+  return payload.web.results;
+}
+
+function normalizeSearchResult(
+  result: z.infer<typeof braveSearchResultSchema>,
+  student: {
+    majorInterest: string;
+    state: string;
+    country: string;
+    financialNeed: boolean;
+    firstGeneration: boolean;
+  },
+  options?: {
+    query?: string;
+    major?: string;
+    state?: string;
+  }
+) {
+  const combinedText = [result.title, result.description, ...result.extra_snippets].join(" ");
+  const parsed = extractTitleAndOrganization(result.title, result.url);
+  const lowerText = combinedText.toLowerCase();
+
+  return discoveredScholarshipSchema.parse({
+    title: parsed.title,
+    organization: parsed.organization,
+    amount: extractAmount(combinedText),
+    description: combinedText.length >= 20 ? combinedText : `${parsed.title} scholarship opportunity from ${parsed.organization}.`,
+    deadline: normalizeDeadlineFromText(combinedText),
+    gpaMin: null,
+    majorRequired: coerceString(options?.major || student.majorInterest) || null,
+    stateRequired: coerceString(options?.state || student.state) || null,
+    countryRequired: coerceString(student.country) || null,
+    genderRequired: null,
+    ethnicityRequired: null,
+    financialNeedRequired: lowerText.includes("financial need") || student.financialNeed,
+    essayRequired: lowerText.includes("essay") || lowerText.includes("personal statement"),
+    estimatedApplicants: 500,
+    numberOfWinners: 10,
+    applicationUrl: sanitizeApplicationUrl(result.url, parsed.title, parsed.organization)
   });
 }
 
@@ -252,10 +315,6 @@ export async function discoverScholarshipsForUser(
 ) {
   await cleanupDemoScholarships();
 
-  if (!client) {
-    return loadFallbackScholarships(userId, options);
-  }
-
   const student = await prisma.studentProfile.findUnique({
     where: { userId }
   });
@@ -264,102 +323,48 @@ export async function discoverScholarshipsForUser(
     throw new Error("Student profile not found.");
   }
 
-  const existing = await prisma.scholarship.findMany({
-    where: {
-      NOT: placeholderHosts.map((host) => ({
-        applicationUrl: { contains: host, mode: "insensitive" }
-      }))
-    },
-    select: { title: true, organization: true },
-    take: 100
-  });
+  if (!env.BRAVE_SEARCH_API_KEY) {
+    return loadFallbackScholarships(userId, options);
+  }
 
-  const existingNames = existing.map((item) => `${item.title} - ${item.organization}`);
   const limit = Math.min(Math.max(options?.limit ?? 12, 5), 20);
+  const queries = buildSearchQueries(student, options);
+  const perQueryCount = Math.min(8, Math.max(4, Math.ceil(limit / Math.max(1, queries.length)) + 1));
 
-  let parsed: z.infer<typeof discoveryResponseSchema>;
+  let searchResults: z.infer<typeof braveSearchResultSchema>[] = [];
 
   try {
-    const response = await client.chat.completions.create({
-      model: env.FEATHERLESS_MODEL,
-      temperature: 0.2,
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a scholarship research assistant. Return only valid JSON as an array. Recommend real or plausibly recurring scholarships that align with the student profile. Prefer known national, state, university, foundation, or employer-sponsored opportunities. Never use example.org, example.com, localhost, or placeholder domains. If an exact application URL is uncertain, return a Google search URL for the scholarship title and organization."
-        },
-        {
-          role: "user",
-          content: JSON.stringify({
-            task: "Generate scholarship recommendations tailored to this student.",
-            student: {
-              firstName: student.firstName,
-              lastName: student.lastName,
-              gpa: student.gpa,
-              majorInterest: student.majorInterest,
-              state: student.state,
-              country: student.country,
-              gender: student.gender,
-              ethnicity: student.ethnicity,
-              financialNeed: student.financialNeed,
-              firstGeneration: student.firstGeneration,
-              activities: student.activities
-            },
-            filters: {
-              query: options?.query ?? null,
-              major: options?.major ?? null,
-              state: options?.state ?? null
-            },
-            constraints: {
-              limit,
-              avoidExistingScholarships: existingNames,
-              deadlineAfter: new Date().toISOString(),
-              outputFields: [
-                "title",
-                "organization",
-                "amount",
-                "description",
-                "deadline",
-                "gpaMin",
-                "majorRequired",
-                "stateRequired",
-                "countryRequired",
-                "genderRequired",
-                "ethnicityRequired",
-                "financialNeedRequired",
-                "essayRequired",
-                "estimatedApplicants",
-                "numberOfWinners",
-                "applicationUrl"
-              ]
-            }
-          })
+    const batches = await Promise.all(queries.map((query) => searchBrave(query, perQueryCount)));
+    const seenUrls = new Set<string>();
+
+    searchResults = batches
+      .flat()
+      .filter((result) => {
+        const scholarshipLike = /(scholarship|grant|fellowship|tuition|financial aid|award)/i.test(
+          `${result.title} ${result.description} ${result.extra_snippets.join(" ")}`
+        );
+
+        if (!scholarshipLike || isPlaceholderUrl(result.url) || seenUrls.has(result.url)) {
+          return false;
         }
-      ]
-    });
 
-    const content = response.choices[0]?.message?.content;
-
-    if (!content) {
-      throw new Error("Discovery model returned no scholarship content.");
-    }
-
-    const rawItems = JSON.parse(extractJsonArray(content)) as unknown[];
-    parsed = discoveryResponseSchema.parse(rawItems.map((item) => normalizeScholarship(item)));
+        seenUrls.add(result.url);
+        return true;
+      })
+      .slice(0, limit);
   } catch (error) {
-    console.error("Scholarship discovery fallback:", error);
+    console.error("Brave scholarship discovery failed:", error);
+    return loadFallbackScholarships(userId, options);
+  }
+
+  if (!searchResults.length) {
     return loadFallbackScholarships(userId, options);
   }
 
   const upserted = [] as Awaited<ReturnType<typeof prisma.scholarship.upsert>>[];
 
-  for (const scholarship of parsed) {
-    const safeApplicationUrl = sanitizeApplicationUrl(
-      scholarship.applicationUrl,
-      scholarship.title,
-      scholarship.organization
-    );
+  for (const result of searchResults) {
+    const scholarship = normalizeSearchResult(result, student, options);
 
     const record = await prisma.scholarship.upsert({
       where: {
@@ -370,12 +375,10 @@ export async function discoverScholarshipsForUser(
       },
       update: {
         ...scholarship,
-        applicationUrl: safeApplicationUrl,
         deadline: new Date(scholarship.deadline)
       },
       create: {
         ...scholarship,
-        applicationUrl: safeApplicationUrl,
         deadline: new Date(scholarship.deadline)
       }
     });

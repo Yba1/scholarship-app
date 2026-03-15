@@ -1,4 +1,4 @@
-import { config } from "dotenv";
+﻿import { config } from "dotenv";
 import { z } from "zod";
 
 config({ path: "../.env" });
@@ -16,7 +16,8 @@ const envSchema = z.object({
   SMTP_PASS: z.string().optional(),
   SMTP_FROM: z.string().optional(),
   FEATHERLESS_API_KEY: z.string().optional(),
-  FEATHERLESS_MODEL: z.string().default("Qwen/Qwen2.5-7B-Instruct")
+  FEATHERLESS_MODEL: z.string().default("Qwen/Qwen2.5-7B-Instruct"),
+  BRAVE_SEARCH_API_KEY: z.string().optional()
 });
 
 export const env = envSchema.parse(process.env);

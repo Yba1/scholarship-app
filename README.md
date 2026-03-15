@@ -1,8 +1,7 @@
-# Scholarship App
+﻿# Scholarship App
 
 https://scholarship-app-frontend-three.vercel.app/ - main website
 https://scholarship-app-backend.vercel.app/ - backend just for viewing
-
 
 Production-ready MVP for a scholarship matching platform with:
 
@@ -28,6 +27,7 @@ Production-ready MVP for a scholarship matching platform with:
 - Dashboard with deadlines and tracker summary
 - Application tracking with statuses
 - Essay feedback endpoint using Featherless when configured
+- Real scholarship discovery using Brave Search when configured
 - Daily deadline reminder job using `node-cron` and `nodemailer`
 - Dynamic SEO pages for scholarship topics and locations
 
@@ -48,6 +48,7 @@ Optional but recommended:
 
 - `FEATHERLESS_API_KEY`
 - `FEATHERLESS_MODEL`
+- `BRAVE_SEARCH_API_KEY`
 - `SMTP_HOST`
 - `SMTP_PORT`
 - `SMTP_USER`
@@ -74,7 +75,7 @@ Run migrations:
 npm run db:migrate
 ```
 
-Seed sample scholarships:
+Seed baseline data:
 
 ```bash
 npm run db:seed
@@ -118,6 +119,7 @@ npm run build
 - `GET /scholarships`
 - `GET /scholarships/:id`
 - `POST /scholarships`
+- `POST /scholarships/discover`
 
 Filtering example:
 
@@ -162,5 +164,6 @@ adjusted_probability = base_probability * (match_score / 100)
 
 - The essay helper provides feedback only and does not generate full essays.
 - Featherless is used through its OpenAI-compatible API surface.
+- Brave Search powers real scholarship discovery when `BRAVE_SEARCH_API_KEY` is set.
 - Reminder emails are only sent when SMTP is configured.
 - The frontend styling was adapted to use the imported Desktop UI direction you provided.
