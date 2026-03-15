@@ -1,5 +1,9 @@
 # Scholarship App
 
+https://scholarship-app-frontend-three.vercel.app/ - main website
+https://scholarship-app-backend.vercel.app/ - backend just for viewing
+
+
 Production-ready MVP for a scholarship matching platform with:
 
 - Next.js 14 frontend using the imported Desktop UI direction
