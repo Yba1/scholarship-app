@@ -1,9 +1,12 @@
-import OpenAI from "openai";
+import { OpenAI } from "openai";
 
 import { env } from "../config/env.js";
 
-const client = env.OPENAI_API_KEY
-  ? new OpenAI({ apiKey: env.OPENAI_API_KEY })
+const client = env.FEATHERLESS_API_KEY
+  ? new OpenAI({
+      apiKey: env.FEATHERLESS_API_KEY,
+      baseURL: "https://api.featherless.ai/v1"
+    })
   : null;
 
 export async function getEssayFeedback(prompt: string, essayText: string) {
@@ -12,13 +15,13 @@ export async function getEssayFeedback(prompt: string, essayText: string) {
       "Grammar suggestions: tighten sentence boundaries, verify punctuation, and replace vague wording with concrete examples.",
       "Clarity improvements: make the main thesis explicit in the opening paragraph and keep each paragraph focused on one idea.",
       "Structural feedback: add a stronger conclusion that reconnects your personal story to the scholarship prompt.",
-      "OpenAI API key is not configured, so this is fallback guidance rather than model-generated feedback."
+      "Featherless API key is not configured, so this is fallback guidance rather than model-generated feedback."
     ].join("\n\n");
   }
 
-  const response = await client.responses.create({
-    model: env.OPENAI_MODEL,
-    input: [
+  const response = await client.chat.completions.create({
+    model: env.FEATHERLESS_MODEL,
+    messages: [
       {
         role: "system",
         content:
@@ -31,5 +34,5 @@ export async function getEssayFeedback(prompt: string, essayText: string) {
     ]
   });
 
-  return response.output_text || "No feedback returned.";
+  return response.choices[0]?.message?.content || "No feedback returned.";
 }
