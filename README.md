@@ -27,7 +27,7 @@ Production-ready MVP for a scholarship matching platform with:
 - Dashboard with deadlines and tracker summary
 - Application tracking with statuses
 - Essay feedback endpoint using Featherless when configured
-- Real scholarship discovery using Brave Search when configured
+- Real scholarship discovery using Tavily Search when configured
 - Daily deadline reminder job using `node-cron` and `nodemailer`
 - Dynamic SEO pages for scholarship topics and locations
 
@@ -48,7 +48,7 @@ Optional but recommended:
 
 - `FEATHERLESS_API_KEY`
 - `FEATHERLESS_MODEL`
-- `BRAVE_SEARCH_API_KEY`
+- `TAVILY_API_KEY`
 - `SMTP_HOST`
 - `SMTP_PORT`
 - `SMTP_USER`
@@ -164,6 +164,6 @@ adjusted_probability = base_probability * (match_score / 100)
 
 - The essay helper provides feedback only and does not generate full essays.
 - Featherless is used through its OpenAI-compatible API surface.
-- Brave Search powers real scholarship discovery when `BRAVE_SEARCH_API_KEY` is set.
+- Tavily Search powers real scholarship discovery when `TAVILY_API_KEY` is set.
 - Reminder emails are only sent when SMTP is configured.
 - The frontend styling was adapted to use the imported Desktop UI direction you provided.

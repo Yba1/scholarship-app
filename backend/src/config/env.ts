@@ -17,7 +17,7 @@ const envSchema = z.object({
   SMTP_FROM: z.string().optional(),
   FEATHERLESS_API_KEY: z.string().optional(),
   FEATHERLESS_MODEL: z.string().default("Qwen/Qwen2.5-7B-Instruct"),
-  BRAVE_SEARCH_API_KEY: z.string().optional()
+  TAVILY_API_KEY: z.string().optional()
 });
 
 export const env = envSchema.parse(process.env);

@@ -5,20 +5,14 @@ import { prisma } from "../lib/prisma.js";
 
 const placeholderHosts = ["example.org", "example.com", "localhost", "127.0.0.1"];
 
-const braveSearchResultSchema = z.object({
+const tavilySearchResultSchema = z.object({
   title: z.string(),
   url: z.string().url(),
-  description: z.string().optional().default(""),
-  extra_snippets: z.array(z.string()).optional().default([])
+  content: z.string().optional().default("")
 });
 
-const braveSearchResponseSchema = z.object({
-  web: z
-    .object({
-      results: z.array(braveSearchResultSchema).default([])
-    })
-    .optional()
-    .default({ results: [] })
+const tavilySearchResponseSchema = z.object({
+  results: z.array(tavilySearchResultSchema).default([])
 });
 
 const discoveredScholarshipSchema = z.object({
@@ -139,7 +133,6 @@ function buildSearchQueries(student: {
   query?: string;
   major?: string;
   state?: string;
-  limit?: number;
 }) {
   const major = coerceString(options?.major || student.majorInterest);
   const state = coerceString(options?.state || student.state);
@@ -151,7 +144,7 @@ function buildSearchQueries(student: {
     new Set(
       [
         [freeText, major, "scholarship", state, country].filter(Boolean).join(" "),
-        [major, "scholarship", country, "site:.org OR site:.edu"].filter(Boolean).join(" "),
+        [major, "scholarship", country].filter(Boolean).join(" "),
         [student.firstGeneration ? "first generation" : "", student.financialNeed ? "financial need" : "", major, "scholarship"].filter(Boolean).join(" "),
         [activity || "", major, "grant", state].filter(Boolean).join(" ")
       ].filter((query) => query.length > 0)
@@ -159,43 +152,42 @@ function buildSearchQueries(student: {
   ).slice(0, 4);
 }
 
-async function searchBrave(query: string, count: number) {
-  if (!env.BRAVE_SEARCH_API_KEY) {
-    return [] as z.infer<typeof braveSearchResultSchema>[];
+async function searchTavily(query: string, maxResults: number) {
+  if (!env.TAVILY_API_KEY) {
+    return [] as z.infer<typeof tavilySearchResultSchema>[];
   }
 
-  const params = new URLSearchParams({
-    q: query,
-    count: String(Math.min(Math.max(count, 1), 20)),
-    search_lang: "en",
-    country: "US",
-    safesearch: "moderate",
-    extra_snippets: "true"
-  });
-
-  const response = await fetch(`https://api.search.brave.com/res/v1/web/search?${params.toString()}`, {
+  const response = await fetch("https://api.tavily.com/search", {
+    method: "POST",
     headers: {
-      Accept: "application/json",
-      "X-Subscription-Token": env.BRAVE_SEARCH_API_KEY
-    }
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${env.TAVILY_API_KEY}`
+    },
+    body: JSON.stringify({
+      query,
+      topic: "general",
+      search_depth: "basic",
+      max_results: Math.min(Math.max(maxResults, 1), 20),
+      include_answer: false,
+      include_raw_content: false
+    })
   });
 
   if (!response.ok) {
-    throw new Error(`Brave search failed with status ${response.status}.`);
+    throw new Error(`Tavily search failed with status ${response.status}.`);
   }
 
-  const payload = braveSearchResponseSchema.parse(await response.json());
-  return payload.web.results;
+  const payload = tavilySearchResponseSchema.parse(await response.json());
+  return payload.results;
 }
 
 function normalizeSearchResult(
-  result: z.infer<typeof braveSearchResultSchema>,
+  result: z.infer<typeof tavilySearchResultSchema>,
   student: {
     majorInterest: string;
     state: string;
     country: string;
     financialNeed: boolean;
-    firstGeneration: boolean;
   },
   options?: {
     query?: string;
@@ -203,7 +195,7 @@ function normalizeSearchResult(
     state?: string;
   }
 ) {
-  const combinedText = [result.title, result.description, ...result.extra_snippets].join(" ");
+  const combinedText = [result.title, result.content].join(" ");
   const parsed = extractTitleAndOrganization(result.title, result.url);
   const lowerText = combinedText.toLowerCase();
 
@@ -211,7 +203,10 @@ function normalizeSearchResult(
     title: parsed.title,
     organization: parsed.organization,
     amount: extractAmount(combinedText),
-    description: combinedText.length >= 20 ? combinedText : `${parsed.title} scholarship opportunity from ${parsed.organization}.`,
+    description:
+      combinedText.length >= 20
+        ? combinedText
+        : `${parsed.title} scholarship opportunity from ${parsed.organization}.`,
     deadline: normalizeDeadlineFromText(combinedText),
     gpaMin: null,
     majorRequired: coerceString(options?.major || student.majorInterest) || null,
@@ -323,7 +318,7 @@ export async function discoverScholarshipsForUser(
     throw new Error("Student profile not found.");
   }
 
-  if (!env.BRAVE_SEARCH_API_KEY) {
+  if (!env.TAVILY_API_KEY) {
     return loadFallbackScholarships(userId, options);
   }
 
@@ -331,17 +326,17 @@ export async function discoverScholarshipsForUser(
   const queries = buildSearchQueries(student, options);
   const perQueryCount = Math.min(8, Math.max(4, Math.ceil(limit / Math.max(1, queries.length)) + 1));
 
-  let searchResults: z.infer<typeof braveSearchResultSchema>[] = [];
+  let searchResults: z.infer<typeof tavilySearchResultSchema>[] = [];
 
   try {
-    const batches = await Promise.all(queries.map((query) => searchBrave(query, perQueryCount)));
+    const batches = await Promise.all(queries.map((query) => searchTavily(query, perQueryCount)));
     const seenUrls = new Set<string>();
 
     searchResults = batches
       .flat()
       .filter((result) => {
         const scholarshipLike = /(scholarship|grant|fellowship|tuition|financial aid|award)/i.test(
-          `${result.title} ${result.description} ${result.extra_snippets.join(" ")}`
+          `${result.title} ${result.content}`
         );
 
         if (!scholarshipLike || isPlaceholderUrl(result.url) || seenUrls.has(result.url)) {
@@ -353,7 +348,7 @@ export async function discoverScholarshipsForUser(
       })
       .slice(0, limit);
   } catch (error) {
-    console.error("Brave scholarship discovery failed:", error);
+    console.error("Tavily scholarship discovery failed:", error);
     return loadFallbackScholarships(userId, options);
   }
 
