@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../backend/src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @default(uuid()) @db.Uuid
+  email          String          @unique
+  passwordHash   String          @map("password_hash")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  studentProfile StudentProfile?
+
+  @@map("users")
+}
+
+model StudentProfile {
+  id              String         @id @default(uuid()) @db.Uuid
+  userId          String         @unique @map("user_id") @db.Uuid
+  firstName       String         @map("first_name")
+  lastName        String         @map("last_name")
+  gpa             Float
+  majorInterest   String         @map("major_interest")
+  state           String
+  country         String
+  gender          String?
+  ethnicity       String?
+  financialNeed   Boolean        @default(false) @map("financial_need")
+  firstGeneration Boolean        @default(false) @map("first_generation")
+  activities      String[]
+  createdAt       DateTime       @default(now()) @map("created_at")
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matches         Match[]
+  applications    Application[]
+  essayRequests   EssayRequest[]
+
+  @@map("student_profiles")
+}
+
+model Scholarship {
+  id                    String        @id @default(uuid()) @db.Uuid
+  title                 String
+  organization          String
+  amount                Int
+  description           String
+  deadline              DateTime
+  gpaMin                Float?        @map("gpa_min")
+  majorRequired         String?       @map("major_required")
+  stateRequired         String?       @map("state_required")
+  countryRequired       String?       @map("country_required")
+  genderRequired        String?       @map("gender_required")
+  ethnicityRequired     String?       @map("ethnicity_required")
+  financialNeedRequired Boolean       @default(false) @map("financial_need_required")
+  essayRequired         Boolean       @default(false) @map("essay_required")
+  estimatedApplicants   Int           @default(1) @map("estimated_applicants")
+  numberOfWinners       Int           @default(1) @map("number_of_winners")
+  applicationUrl        String        @map("application_url")
+  createdAt             DateTime      @default(now()) @map("created_at")
+  matches               Match[]
+  applications          Application[]
+
+  @@unique([title, organization])
+  @@map("scholarships")
+}
+
+model Match {
+  id             String         @id @default(uuid()) @db.Uuid
+  studentId      String         @map("student_id") @db.Uuid
+  scholarshipId  String         @map("scholarship_id") @db.Uuid
+  matchScore     Int            @map("match_score")
+  winProbability Float          @map("win_probability")
+  saved          Boolean        @default(false)
+  applied        Boolean        @default(false)
+  createdAt      DateTime       @default(now()) @map("created_at")
+  student        StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  scholarship    Scholarship    @relation(fields: [scholarshipId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, scholarshipId])
+  @@map("matches")
+}
+
+model Application {
+  id            String         @id @default(uuid()) @db.Uuid
+  studentId     String         @map("student_id") @db.Uuid
+  scholarshipId String         @map("scholarship_id") @db.Uuid
+  status        String
+  submittedAt   DateTime?      @map("submitted_at")
+  notes         String?
+  student       StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  scholarship   Scholarship    @relation(fields: [scholarshipId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, scholarshipId])
+  @@map("applications")
+}
+
+model EssayRequest {
+  id         String         @id @default(uuid()) @db.Uuid
+  studentId  String         @map("student_id") @db.Uuid
+  prompt     String
+  essayText  String         @map("essay_text")
+  aiFeedback String         @map("ai_feedback")
+  createdAt  DateTime       @default(now()) @map("created_at")
+  student    StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("essay_requests")
+}
