@@ -1,6 +1,6 @@
 import cors from "cors";
 import express from "express";
-import rateLimit from "express-rate-limit";
+import { rateLimit } from "express-rate-limit";
 
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/error-handler.js";
